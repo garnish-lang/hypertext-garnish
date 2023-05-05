@@ -28,7 +28,7 @@ impl Declaration {
 
 impl ToString for Declaration {
     fn to_string(&self) -> String {
-        format!("{}: {};", self.property, self.value.to_string())
+        format!("{}:{};", self.property, self.value.to_string())
     }
 }
 
@@ -60,20 +60,33 @@ impl ToString for Selector {
             Selector::Id(id) => format!("#{}", id),
             Selector::Class(class) => format!(".{}", class),
             Selector::Combinator(base, op, relative) => {
-                format!("{}{} {}", base.to_string(), match op {
-                    Combinator::Descendant => "",
-                    Combinator::Child => " >",
-                    Combinator::AdjacentSibling => " +",
-                    Combinator::GeneralSibling => " ~"
-                }, relative.to_string())
+                format!(
+                    "{}{} {}",
+                    base.to_string(),
+                    match op {
+                        Combinator::Descendant => "",
+                        Combinator::Child => " >",
+                        Combinator::AdjacentSibling => " +",
+                        Combinator::GeneralSibling => " ~",
+                    },
+                    relative.to_string()
+                )
             }
             Selector::PseudoClass(base, class) => format!("{}:{}", base.to_string(), class),
             Selector::PseudoElement(base, class) => format!("{}::{}", base.to_string(), class),
             Selector::Attribute(attr) => format!("[{}]", attr),
             Selector::AttributeValue(attr, value) => format!("[{}=\"{}\"]", attr, value),
             Selector::AttributeContains(attr, value) => format!("[{}~=\"{}\"]", attr, value),
-            Selector::Chain(items) => items.iter().map(Selector::to_string).collect::<Vec<String>>().join(""),
-            Selector::Group(items) => items.iter().map(Selector::to_string).collect::<Vec<String>>().join(", ")
+            Selector::Chain(items) => items
+                .iter()
+                .map(Selector::to_string)
+                .collect::<Vec<String>>()
+                .join(""),
+            Selector::Group(items) => items
+                .iter()
+                .map(Selector::to_string)
+                .collect::<Vec<String>>()
+                .join(", "),
         }
     }
 }
@@ -84,6 +97,30 @@ struct Rule {
     sub_rules: Vec<Rule>,
 }
 
+impl Rule {
+    pub fn new(selector: Selector, declarations: Vec<Declaration>, sub_rules: Vec<Rule>) -> Self {
+        Self {
+            selector,
+            declarations,
+            sub_rules,
+        }
+    }
+}
+
+impl ToString for Rule {
+    fn to_string(&self) -> String {
+        format!(
+            "{}{{{}}}",
+            self.selector.to_string(),
+            self.declarations
+                .iter()
+                .map(Declaration::to_string)
+                .collect::<Vec<String>>()
+                .join("")
+        )
+    }
+}
+
 struct RuleSet {
     media_query: Option<String>,
     rules: Vec<Rule>,
@@ -92,7 +129,7 @@ struct RuleSet {
 
 #[cfg(test)]
 mod to_string {
-    use crate::css::{Combinator, Declaration, DeclarationValue, Selector};
+    use crate::css::{Combinator, Declaration, DeclarationValue, Rule, Selector};
 
     #[test]
     fn declaration() {
@@ -100,7 +137,7 @@ mod to_string {
             "color".to_string(),
             DeclarationValue::Basic("blue".to_string()),
         );
-        assert_eq!(d.to_string(), "color: blue;")
+        assert_eq!(d.to_string(), "color:blue;")
     }
 
     #[test]
@@ -109,7 +146,7 @@ mod to_string {
             "font-family".to_string(),
             DeclarationValue::Basic("Times New Roman".to_string()),
         );
-        assert_eq!(d.to_string(), "font-family: \"Times New Roman\";")
+        assert_eq!(d.to_string(), "font-family:\"Times New Roman\";")
     }
 
     #[test]
@@ -121,7 +158,7 @@ mod to_string {
                 vec!["200".into(), "200".into(), "200".into()],
             ),
         );
-        assert_eq!(d.to_string(), "color: rgb(200, 200, 200);")
+        assert_eq!(d.to_string(), "color:rgb(200, 200, 200);")
     }
 
     #[test]
@@ -150,7 +187,7 @@ mod to_string {
         let s = Selector::Combinator(
             Box::new(Selector::Tag("body".to_string())),
             Combinator::Descendant,
-            Box::new(Selector::Tag("h1".to_string()))
+            Box::new(Selector::Tag("h1".to_string())),
         );
 
         assert_eq!(s.to_string(), "body h1");
@@ -161,7 +198,7 @@ mod to_string {
         let s = Selector::Combinator(
             Box::new(Selector::Tag("body".to_string())),
             Combinator::Child,
-            Box::new(Selector::Tag("h1".to_string()))
+            Box::new(Selector::Tag("h1".to_string())),
         );
 
         assert_eq!(s.to_string(), "body > h1");
@@ -172,7 +209,7 @@ mod to_string {
         let s = Selector::Combinator(
             Box::new(Selector::Tag("body".to_string())),
             Combinator::AdjacentSibling,
-            Box::new(Selector::Tag("h1".to_string()))
+            Box::new(Selector::Tag("h1".to_string())),
         );
 
         assert_eq!(s.to_string(), "body + h1");
@@ -183,7 +220,7 @@ mod to_string {
         let s = Selector::Combinator(
             Box::new(Selector::Tag("body".to_string())),
             Combinator::GeneralSibling,
-            Box::new(Selector::Tag("h1".to_string()))
+            Box::new(Selector::Tag("h1".to_string())),
         );
 
         assert_eq!(s.to_string(), "body ~ h1");
@@ -198,7 +235,7 @@ mod to_string {
                 Box::new(Selector::Tag("section".to_string())),
             )),
             Combinator::GeneralSibling,
-            Box::new(Selector::Tag("h1".to_string()))
+            Box::new(Selector::Tag("h1".to_string())),
         );
 
         assert_eq!(s.to_string(), "body > section ~ h1");
@@ -208,7 +245,7 @@ mod to_string {
     fn pseudo_class() {
         let s = Selector::PseudoClass(
             Box::new(Selector::Tag("body".to_string())),
-            "hover".to_string()
+            "hover".to_string(),
         );
 
         assert_eq!(s.to_string(), "body:hover");
@@ -218,7 +255,7 @@ mod to_string {
     fn pseudo_element() {
         let s = Selector::PseudoElement(
             Box::new(Selector::Tag("body".to_string())),
-            "first-line".to_string()
+            "first-line".to_string(),
         );
 
         assert_eq!(s.to_string(), "body::first-line");
@@ -226,29 +263,21 @@ mod to_string {
 
     #[test]
     fn attribute() {
-        let s = Selector::Attribute(
-            "title".to_string()
-        );
+        let s = Selector::Attribute("title".to_string());
 
         assert_eq!(s.to_string(), "[title]");
     }
 
     #[test]
     fn attribute_value() {
-        let s = Selector::AttributeValue(
-            "title".to_string(),
-            "hello".to_string()
-        );
+        let s = Selector::AttributeValue("title".to_string(), "hello".to_string());
 
         assert_eq!(s.to_string(), "[title=\"hello\"]");
     }
 
     #[test]
     fn attribute_contains() {
-        let s = Selector::AttributeContains(
-            "title".to_string(),
-            "hello".to_string()
-        );
+        let s = Selector::AttributeContains("title".to_string(), "hello".to_string());
 
         assert_eq!(s.to_string(), "[title~=\"hello\"]");
     }
@@ -273,5 +302,29 @@ mod to_string {
         ]);
 
         assert_eq!(s.to_string(), "body, .main, #title");
+    }
+
+    #[test]
+    fn rule() {
+        let rule = Rule::new(
+            Selector::Tag("body".to_string()),
+            vec![
+                Declaration::new(
+                    "color".to_string(),
+                    DeclarationValue::Basic("blue".to_string()),
+                ),
+                Declaration::new(
+                    "background-color".to_string(),
+                    DeclarationValue::Basic("red".to_string()),
+                ),
+                Declaration::new(
+                    "font-family".to_string(),
+                    DeclarationValue::Basic("Times New Roman".to_string()),
+                ),
+            ],
+            vec![],
+        );
+
+        assert_eq!(rule.to_string(), "body{color:blue;background-color:red;font-family:\"Times New Roman\";}")
     }
 }
