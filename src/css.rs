@@ -67,6 +67,8 @@ impl ToString for Selector {
                     Combinator::GeneralSibling => " ~"
                 }, relative.to_string())
             }
+            Selector::PseudoClass(base, class) => format!("{}:{}", base.to_string(), class),
+            Selector::PseudoElement(base, class) => format!("{}::{}", base.to_string(), class),
             _ => unimplemented!(),
         }
     }
@@ -196,5 +198,25 @@ mod to_string {
         );
 
         assert_eq!(s.to_string(), "body > section ~ h1");
+    }
+
+    #[test]
+    fn pseudo_class() {
+        let s = Selector::PseudoClass(
+            Box::new(Selector::Tag("body".to_string())),
+            "hover".to_string()
+        );
+
+        assert_eq!(s.to_string(), "body:hover");
+    }
+
+    #[test]
+    fn pseudo_element() {
+        let s = Selector::PseudoElement(
+            Box::new(Selector::Tag("body".to_string())),
+            "first-line".to_string()
+        );
+
+        assert_eq!(s.to_string(), "body::first-line");
     }
 }
