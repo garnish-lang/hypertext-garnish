@@ -26,6 +26,7 @@ impl ToString for Attribute {
 
 enum Node {
     Text(String),
+    Comment(String),
     Element {
         tag: String,
         attributes: Vec<Attribute>,
@@ -45,12 +46,17 @@ impl Node {
     pub fn text(text: String) -> Self {
         Self::Text(text)
     }
+
+    pub fn comment(text: String) -> Self {
+        Self::Comment(text)
+    }
 }
 
 impl ToString for Node {
     fn to_string(&self) -> String {
         match self {
             Node::Text(s) => s.clone(),
+            Node::Comment(s) => format!("<!-- {} -->", s),
             Node::Element {
                 tag,
                 attributes,
@@ -164,5 +170,12 @@ mod to_string {
             element.to_string(),
             "<body><h1>Heading</h1>Some text</body>"
         );
+    }
+
+    #[test]
+    fn comment() {
+        let element = Node::comment("Some comments".to_string());
+
+        assert_eq!(element.to_string(), "<!-- Some comments -->");
     }
 }
