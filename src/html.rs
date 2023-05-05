@@ -1,4 +1,7 @@
-struct Attribute {
+use serde::Deserialize;
+
+#[derive(Debug, Clone, Eq, PartialEq, Deserialize)]
+pub struct Attribute {
     name: String,
     value: Option<String>,
 }
@@ -24,7 +27,8 @@ impl ToString for Attribute {
     }
 }
 
-enum Node {
+#[derive(Debug, Clone, Eq, PartialEq, Deserialize)]
+pub enum Node {
     Text(String),
     Comment(String),
     Element {

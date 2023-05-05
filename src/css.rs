@@ -1,4 +1,4 @@
-enum DeclarationValue {
+pub enum DeclarationValue {
     Basic(String),
     Function(String, Vec<String>), // (function name, function arguments
 }
@@ -15,7 +15,7 @@ impl ToString for DeclarationValue {
     }
 }
 
-struct Declaration {
+pub struct Declaration {
     property: String,
     value: DeclarationValue,
 }
@@ -32,14 +32,14 @@ impl ToString for Declaration {
     }
 }
 
-enum Combinator {
+pub enum Combinator {
     Descendant,
     Child,
     AdjacentSibling,
     GeneralSibling,
 }
 
-enum Selector {
+pub enum Selector {
     Universal,
     Tag(String),                                          // tag name
     Class(String),                                        // class name
@@ -93,7 +93,7 @@ impl ToString for Selector {
     }
 }
 
-struct Rule {
+pub struct Rule {
     selector: Selector,
     declarations: Vec<Declaration>,
     sub_rules: Vec<Rule>,
@@ -153,13 +153,13 @@ impl ToString for Rule {
     }
 }
 
-enum MediaConstraint {
+pub enum MediaConstraint {
     None,
     Not,
     Only,
 }
 
-struct MediaFeature {
+pub struct MediaFeature {
     property: String,
     value: String,
 }
@@ -176,7 +176,7 @@ impl ToString for MediaFeature {
     }
 }
 
-enum MediaCondition {
+pub enum MediaCondition {
     Lone(MediaFeature),
     And(MediaFeature, MediaFeature),
     Or(MediaFeature, MediaFeature),
@@ -194,7 +194,7 @@ impl ToString for MediaCondition {
     }
 }
 
-struct MediaQuery {
+pub struct MediaQuery {
     constraint: MediaConstraint,
     media_type: String,
     features: Vec<MediaCondition>,
@@ -214,7 +214,7 @@ impl MediaQuery {
     }
 }
 
-struct RuleSet {
+pub struct RuleSet {
     media_query: Option<MediaQuery>,
     rules: Vec<Rule>,
     sub_sets: Vec<RuleSet>,
