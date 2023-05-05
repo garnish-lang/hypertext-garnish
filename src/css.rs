@@ -72,7 +72,8 @@ impl ToString for Selector {
             Selector::Attribute(attr) => format!("[{}]", attr),
             Selector::AttributeValue(attr, value) => format!("[{}=\"{}\"]", attr, value),
             Selector::AttributeContains(attr, value) => format!("[{}~=\"{}\"]", attr, value),
-            _ => unimplemented!(),
+            Selector::Chain(items) => items.iter().map(Selector::to_string).collect::<Vec<String>>().join(""),
+            Selector::Group(items) => items.iter().map(Selector::to_string).collect::<Vec<String>>().join(", ")
         }
     }
 }
@@ -250,5 +251,27 @@ mod to_string {
         );
 
         assert_eq!(s.to_string(), "[title~=\"hello\"]");
+    }
+
+    #[test]
+    fn chain() {
+        let s = Selector::Chain(vec![
+            Selector::Tag("body".to_string()),
+            Selector::Class("main".to_string()),
+            Selector::Attribute("title".to_string()),
+        ]);
+
+        assert_eq!(s.to_string(), "body.main[title]");
+    }
+
+    #[test]
+    fn group() {
+        let s = Selector::Group(vec![
+            Selector::Tag("body".to_string()),
+            Selector::Class("main".to_string()),
+            Selector::Id("title".to_string()),
+        ]);
+
+        assert_eq!(s.to_string(), "body, .main, #title");
     }
 }
