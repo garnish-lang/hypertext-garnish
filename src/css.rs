@@ -14,9 +14,9 @@ enum Selector {
     Tag(String), // tag name
     Class(String), // class name
     Id(String), // id name
-    Combinator(Selector, Combinator, Selector), // (base selector, combination)
-    PseudoClass(Selector, String), // (base selector, pseudo class)
-    PseudoElement(Selector, String), // (base selector, pseudo element)
+    Combinator(Box<Selector>, Combinator, Box<Selector>), // (base selector, combination)
+    PseudoClass(Box<Selector>, String), // (base selector, pseudo class)
+    PseudoElement(Box<Selector>, String), // (base selector, pseudo element)
     Attribute(String), // attribute name
     AttributeValue(String, String), // (attribute name, attribute value)
     AttributeContains(String, String), // (attribute name, search string)
