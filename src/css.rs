@@ -105,11 +105,9 @@ impl Rule {
             sub_rules,
         }
     }
-}
 
-impl ToString for Rule {
-    fn to_string(&self) -> String {
-        format!(
+    fn make_string(&self) -> String {
+        let mut all_rules = vec![format!(
             "{}{{{}}}",
             self.selector.to_string(),
             self.declarations
@@ -117,7 +115,40 @@ impl ToString for Rule {
                 .map(Declaration::to_string)
                 .collect::<Vec<String>>()
                 .join("")
-        )
+        )];
+
+        let mut sub_rules = vec![(format!("{}>", self.selector.to_string()), &self.sub_rules)];
+
+        while let Some((prefix, rules)) = sub_rules.pop() {
+            for rule in rules {
+                let r = rule.clone();
+                all_rules.push(format!(
+                    "{}{}{{{}}}",
+                    prefix,
+                    rule.selector.to_string(),
+                    rule.declarations
+                        .iter()
+                        .map(Declaration::to_string)
+                        .collect::<Vec<String>>()
+                        .join("")
+                ));
+
+                if !rule.sub_rules.is_empty() {
+                    sub_rules.push((
+                        format!("{}{}>", prefix, rule.selector.to_string()),
+                        &rule.sub_rules,
+                    ))
+                }
+            }
+        }
+
+        all_rules.join("")
+    }
+}
+
+impl ToString for Rule {
+    fn to_string(&self) -> String {
+        self.make_string()
     }
 }
 
@@ -325,6 +356,40 @@ mod to_string {
             vec![],
         );
 
-        assert_eq!(rule.to_string(), "body{color:blue;background-color:red;font-family:\"Times New Roman\";}")
+        assert_eq!(
+            rule.to_string(),
+            "body{color:blue;background-color:red;font-family:\"Times New Roman\";}"
+        )
+    }
+
+    #[test]
+    fn rule_with_sub_rules() {
+        let rule = Rule::new(
+            Selector::Tag("body".to_string()),
+            vec![Declaration::new(
+                "color".to_string(),
+                DeclarationValue::Basic("blue".to_string()),
+            )],
+            vec![Rule::new(
+                Selector::Tag("section".to_string()),
+                vec![Declaration::new(
+                    "background-color".to_string(),
+                    DeclarationValue::Basic("red".to_string()),
+                )],
+                vec![Rule::new(
+                    Selector::Tag("h1".to_string()),
+                    vec![Declaration::new(
+                        "font-family".to_string(),
+                        DeclarationValue::Basic("Times New Roman".to_string()),
+                    )],
+                    vec![],
+                )],
+            )],
+        );
+
+        assert_eq!(
+            rule.to_string(),
+            "body{color:blue;}body>section{background-color:red;}body>section>h1{font-family:\"Times New Roman\";}"
+        )
     }
 }
