@@ -5,15 +5,12 @@ struct Declaration {
 
 struct Rule {
     selector: String,
-    declarations: Vec<CSSDeclaration>,
+    declarations: Vec<Declaration>,
+    sub_rules: Vec<Rule>,
 }
 
 struct RuleSet {
     media_query: Option<String>,
-    rules: Vec<CSSRule>,
+    rules: Vec<Rule>,
+    sub_sets: Vec<RuleSet>,
 }
-
-struct Sheet {
-    sets: Vec<CSSSet>
-}
-

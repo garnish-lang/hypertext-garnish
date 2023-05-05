@@ -5,7 +5,7 @@ struct Attribute {
 
 struct Element {
     tag: String,
-    attributes: Vec<HTMLAttribute>,
-    children: Vec<HTMLElement>,
+    attributes: Vec<Attribute>,
+    children: Vec<Element>,
     text: String,
 }
