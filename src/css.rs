@@ -3,18 +3,18 @@ struct Declaration {
     value: String,
 }
 
-enum CombinatorSelector {
-    Descendant(Selector),
-    Child(Selector),
-    AdjacentSibling(Selector),
-    GeneralSibling(Selector),
+enum Combinator {
+    Descendant,
+    Child,
+    AdjacentSibling,
+    GeneralSibling,
 }
 
 enum Selector {
     Tag(String), // tag name
     Class(String), // class name
     Id(String), // id name
-    Combinator(Selector, CombinatorSelector), // (base selector, combination)
+    Combinator(Selector, Combinator, Selector), // (base selector, combination)
     PseudoClass(Selector, String), // (base selector, pseudo class)
     PseudoElement(Selector, String), // (base selector, pseudo element)
     Attribute(String), // attribute name
