@@ -6,7 +6,10 @@ enum DeclarationValue {
 impl ToString for DeclarationValue {
     fn to_string(&self) -> String {
         match self {
-            DeclarationValue::Basic(s) => s.to_string(),
+            DeclarationValue::Basic(s) => match s.contains(" ") {
+                true => format!("\"{}\"", s),
+                false => s.to_string()
+            },
             DeclarationValue::Function(name, args) => format!("{}({})", name, args.join(", ")),
         }
     }
@@ -73,6 +76,15 @@ mod to_string {
             DeclarationValue::Basic("blue".to_string()),
         );
         assert_eq!(d.to_string(), "color: blue;")
+    }
+
+    #[test]
+    fn declaration_basic_quotes_strings_with_spaces() {
+        let d = Declaration::new(
+            "font-family".to_string(),
+            DeclarationValue::Basic("Times New Roman".to_string()),
+        );
+        assert_eq!(d.to_string(), "font-family: \"Times New Roman\";")
     }
 
     #[test]
