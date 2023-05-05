@@ -121,7 +121,6 @@ impl Rule {
 
         while let Some((prefix, rules)) = sub_rules.pop() {
             for rule in rules {
-                let r = rule.clone();
                 all_rules.push(format!(
                     "{}{}{{{}}}",
                     prefix,
@@ -152,15 +151,133 @@ impl ToString for Rule {
     }
 }
 
+enum MediaConstraint {
+    None,
+    Not,
+    Only,
+}
+
+struct MediaFeature {
+    property: String,
+    value: String,
+}
+
+impl MediaFeature {
+    pub fn new(property: String, value: String) -> Self {
+        Self { property, value }
+    }
+}
+
+impl ToString for MediaFeature {
+    fn to_string(&self) -> String {
+        format!("({}:{})", self.property, self.value)
+    }
+}
+
+enum MediaCondition {
+    Lone(MediaFeature),
+    And(MediaFeature, MediaFeature),
+    Or(MediaFeature, MediaFeature),
+    Not(MediaFeature, MediaFeature),
+}
+
+impl ToString for MediaCondition {
+    fn to_string(&self) -> String {
+        match self {
+            MediaCondition::Lone(f) => f.to_string(),
+            MediaCondition::And(f1, f2) => format!("{} and {}", f1.to_string(), f2.to_string()),
+            MediaCondition::Or(f1, f2) => format!("{} or {}", f1.to_string(), f2.to_string()),
+            MediaCondition::Not(f1, f2) => format!("{} not {}", f1.to_string(), f2.to_string())
+        }
+    }
+}
+
+struct MediaQuery {
+    constraint: MediaConstraint,
+    media_type: String,
+    features: Vec<MediaCondition>,
+}
+
+impl MediaQuery {
+    pub fn new(
+        condition: MediaConstraint,
+        media_type: String,
+        features: Vec<MediaCondition>,
+    ) -> Self {
+        Self {
+            constraint: condition,
+            media_type,
+            features,
+        }
+    }
+}
+
 struct RuleSet {
-    media_query: Option<String>,
+    media_query: Option<MediaQuery>,
     rules: Vec<Rule>,
     sub_sets: Vec<RuleSet>,
 }
 
+impl RuleSet {
+    pub fn new(rules: Vec<Rule>, sub_sets: Vec<RuleSet>, media_query: Option<MediaQuery>) -> Self {
+        Self {
+            rules,
+            sub_sets,
+            media_query,
+        }
+    }
+}
+
+impl ToString for RuleSet {
+    fn to_string(&self) -> String {
+        let all_sets = format!(
+            "{}{}",
+            self.rules
+                .iter()
+                .map(Rule::to_string)
+                .collect::<Vec<String>>()
+                .join(""),
+            self.sub_sets
+                .iter()
+                .map(RuleSet::to_string)
+                .collect::<Vec<String>>()
+                .join(""),
+        );
+
+        match &self.media_query {
+            None => all_sets,
+            Some(query) => format!(
+                "@media {}{}{}{{{}}}",
+                match query.constraint {
+                    MediaConstraint::None => "",
+                    MediaConstraint::Only => "only ",
+                    MediaConstraint::Not => "not ",
+                },
+                query.media_type,
+                match query.features.len() {
+                    0 => String::new(),
+                    _ => format!(
+                        " and {}",
+                        query
+                            .features
+                            .iter()
+                            .map(MediaCondition::to_string)
+                            .collect::<Vec<String>>()
+                            .join("")
+                    ),
+                },
+                all_sets
+            ),
+        }
+    }
+}
+
 #[cfg(test)]
 mod to_string {
-    use crate::css::{Combinator, Declaration, DeclarationValue, Rule, Selector};
+    use crate::css::{
+        Combinator, Declaration, DeclarationValue, MediaCondition, MediaConstraint, MediaFeature,
+        MediaQuery, Rule, RuleSet, Selector,
+    };
 
     #[test]
     fn declaration() {
@@ -391,5 +508,187 @@ mod to_string {
             rule.to_string(),
             "body{color:blue;}body>section{background-color:red;}body>section>h1{font-family:\"Times New Roman\";}"
         )
+    }
+
+    fn make_rule_set() -> RuleSet {
+        RuleSet::new(
+            vec![
+                Rule::new(
+                    Selector::Tag("body".to_string()),
+                    vec![Declaration::new(
+                        "color".to_string(),
+                        DeclarationValue::Basic("blue".to_string()),
+                    )],
+                    vec![],
+                ),
+                Rule::new(
+                    Selector::Tag("section".to_string()),
+                    vec![Declaration::new(
+                        "background-color".to_string(),
+                        DeclarationValue::Basic("red".to_string()),
+                    )],
+                    vec![],
+                ),
+                Rule::new(
+                    Selector::Tag("h1".to_string()),
+                    vec![Declaration::new(
+                        "font-family".to_string(),
+                        DeclarationValue::Basic("Times New Roman".to_string()),
+                    )],
+                    vec![],
+                ),
+            ],
+            vec![],
+            None,
+        )
+    }
+
+    #[test]
+    fn rule_set() {
+        let set = make_rule_set();
+
+        assert_eq!(
+            set.to_string(),
+            "body{color:blue;}section{background-color:red;}h1{font-family:\"Times New Roman\";}"
+        )
+    }
+
+    #[test]
+    fn rule_set_with_query() {
+        let mut set = make_rule_set();
+        set.media_query = Some(MediaQuery::new(
+            MediaConstraint::None,
+            "screen".to_string(),
+            vec![],
+        ));
+
+        assert_eq!(
+            set.to_string(),
+            "@media screen{body{color:blue;}section{background-color:red;}h1{font-family:\"Times New Roman\";}}"
+        )
+    }
+
+    #[test]
+    fn rule_set_with_query_constraint_only() {
+        let mut set = make_rule_set();
+        set.media_query = Some(MediaQuery::new(
+            MediaConstraint::Only,
+            "screen".to_string(),
+            vec![],
+        ));
+
+        assert_eq!(
+            set.to_string(),
+            "@media only screen{body{color:blue;}section{background-color:red;}h1{font-family:\"Times New Roman\";}}"
+        )
+    }
+
+    #[test]
+    fn rule_set_with_query_constraint_not() {
+        let mut set = make_rule_set();
+        set.media_query = Some(MediaQuery::new(
+            MediaConstraint::Not,
+            "screen".to_string(),
+            vec![],
+        ));
+
+        assert_eq!(
+            set.to_string(),
+            "@media not screen{body{color:blue;}section{background-color:red;}h1{font-family:\"Times New Roman\";}}"
+        )
+    }
+
+    #[test]
+    fn rule_set_with_query_with_feature() {
+        let mut set = make_rule_set();
+        set.media_query = Some(MediaQuery::new(
+            MediaConstraint::None,
+            "screen".to_string(),
+            vec![MediaCondition::Lone(MediaFeature::new(
+                "max-width".to_string(),
+                "1000px".to_string(),
+            ))],
+        ));
+
+        assert_eq!(
+            set.to_string(),
+            "@media screen and (max-width:1000px){body{color:blue;}section{background-color:red;}h1{font-family:\"Times New Roman\";}}"
+        )
+    }
+
+    #[test]
+    fn rule_set_with_query_with_and_feature() {
+        let mut set = make_rule_set();
+        set.media_query = Some(MediaQuery::new(
+            MediaConstraint::None,
+            "screen".to_string(),
+            vec![MediaCondition::And(
+                MediaFeature::new("max-width".to_string(), "1000px".to_string()),
+                MediaFeature::new("orientation".to_string(), "landscape".to_string()),
+            )],
+        ));
+
+        assert_eq!(
+            set.to_string(),
+            "@media screen and (max-width:1000px) and (orientation:landscape){body{color:blue;}section{background-color:red;}h1{font-family:\"Times New Roman\";}}"
+        )
+    }
+
+    #[test]
+    fn rule_set_with_query_with_or_feature() {
+        let mut set = make_rule_set();
+        set.media_query = Some(MediaQuery::new(
+            MediaConstraint::None,
+            "screen".to_string(),
+            vec![MediaCondition::Or(
+                MediaFeature::new("max-width".to_string(), "1000px".to_string()),
+                MediaFeature::new("orientation".to_string(), "landscape".to_string()),
+            )],
+        ));
+
+        assert_eq!(
+            set.to_string(),
+            "@media screen and (max-width:1000px) or (orientation:landscape){body{color:blue;}section{background-color:red;}h1{font-family:\"Times New Roman\";}}"
+        )
+    }
+
+    #[test]
+    fn rule_set_with_query_with_not_feature() {
+        let mut set = make_rule_set();
+        set.media_query = Some(MediaQuery::new(
+            MediaConstraint::None,
+            "screen".to_string(),
+            vec![MediaCondition::Not(
+                MediaFeature::new("max-width".to_string(), "1000px".to_string()),
+                MediaFeature::new("orientation".to_string(), "landscape".to_string()),
+            )],
+        ));
+
+        assert_eq!(
+            set.to_string(),
+            "@media screen and (max-width:1000px) not (orientation:landscape){body{color:blue;}section{background-color:red;}h1{font-family:\"Times New Roman\";}}"
+        )
+    }
+
+    #[test]
+    fn rule_set_multiple_no_media_query_dont_nest() {
+        let mut set = make_rule_set();
+        set.sub_sets.push(make_rule_set());
+
+        assert_eq!(set.to_string(), "body{color:blue;}section{background-color:red;}h1{font-family:\"Times New Roman\";}body{color:blue;}section{background-color:red;}h1{font-family:\"Times New Roman\";}")
+    }
+
+    #[test]
+    fn rule_set_multiple_with_media_query() {
+        let mut set = make_rule_set();
+        let mut with_media = make_rule_set();
+        with_media.media_query = Some(MediaQuery::new(
+            MediaConstraint::None,
+            "screen".to_string(),
+            vec![],
+        ));
+        set.sub_sets.push(with_media);
+
+        assert_eq!(set.to_string(), "body{color:blue;}section{background-color:red;}h1{font-family:\"Times New Roman\";}@media screen{body{color:blue;}section{background-color:red;}h1{font-family:\"Times New Roman\";}}")
     }
 }
