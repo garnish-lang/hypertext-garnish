@@ -10,7 +10,7 @@ impl ToString for DeclarationValue {
                 true => format!("\"{}\"", s),
                 false => s.to_string(),
             },
-            DeclarationValue::Function(name, args) => format!("{}({})", name, args.join(", ")),
+            DeclarationValue::Function(name, args) => format!("{}({})", name, args.join(",")),
         }
     }
 }
@@ -63,13 +63,13 @@ impl ToString for Selector {
             Selector::Class(class) => format!(".{}", class),
             Selector::Combinator(base, op, relative) => {
                 format!(
-                    "{}{} {}",
+                    "{}{}{}",
                     base.to_string(),
                     match op {
-                        Combinator::Descendant => "",
-                        Combinator::Child => " >",
-                        Combinator::AdjacentSibling => " +",
-                        Combinator::GeneralSibling => " ~",
+                        Combinator::Descendant => " ",
+                        Combinator::Child => ">",
+                        Combinator::AdjacentSibling => "+",
+                        Combinator::GeneralSibling => "~",
                     },
                     relative.to_string()
                 )
@@ -88,7 +88,7 @@ impl ToString for Selector {
                 .iter()
                 .map(Selector::to_string)
                 .collect::<Vec<String>>()
-                .join(", "),
+                .join(","),
         }
     }
 }
@@ -308,7 +308,7 @@ mod to_string {
                 vec!["200".into(), "200".into(), "200".into()],
             ),
         );
-        assert_eq!(d.to_string(), "color:rgb(200, 200, 200);")
+        assert_eq!(d.to_string(), "color:rgb(200,200,200);")
     }
 
     #[test]
@@ -358,7 +358,7 @@ mod to_string {
             Box::new(Selector::Tag("h1".to_string())),
         );
 
-        assert_eq!(s.to_string(), "body > h1");
+        assert_eq!(s.to_string(), "body>h1");
     }
 
     #[test]
@@ -369,7 +369,7 @@ mod to_string {
             Box::new(Selector::Tag("h1".to_string())),
         );
 
-        assert_eq!(s.to_string(), "body + h1");
+        assert_eq!(s.to_string(), "body+h1");
     }
 
     #[test]
@@ -380,7 +380,7 @@ mod to_string {
             Box::new(Selector::Tag("h1".to_string())),
         );
 
-        assert_eq!(s.to_string(), "body ~ h1");
+        assert_eq!(s.to_string(), "body~h1");
     }
 
     #[test]
@@ -395,7 +395,7 @@ mod to_string {
             Box::new(Selector::Tag("h1".to_string())),
         );
 
-        assert_eq!(s.to_string(), "body > section ~ h1");
+        assert_eq!(s.to_string(), "body>section~h1");
     }
 
     #[test]
@@ -458,7 +458,7 @@ mod to_string {
             Selector::Id("title".to_string()),
         ]);
 
-        assert_eq!(s.to_string(), "body, .main, #title");
+        assert_eq!(s.to_string(), "body,.main,#title");
     }
 
     #[test]
