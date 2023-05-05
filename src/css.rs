@@ -59,6 +59,14 @@ impl ToString for Selector {
             Selector::Tag(s) => s.to_string(),
             Selector::Id(id) => format!("#{}", id),
             Selector::Class(class) => format!(".{}", class),
+            Selector::Combinator(base, op, relative) => {
+                format!("{}{} {}", base.to_string(), match op {
+                    Combinator::Descendant => "",
+                    Combinator::Child => " >",
+                    Combinator::AdjacentSibling => " +",
+                    Combinator::GeneralSibling => " ~"
+                }, relative.to_string())
+            }
             _ => unimplemented!(),
         }
     }
@@ -78,7 +86,7 @@ struct RuleSet {
 
 #[cfg(test)]
 mod to_string {
-    use crate::css::{Declaration, DeclarationValue, Selector};
+    use crate::css::{Combinator, Declaration, DeclarationValue, Selector};
 
     #[test]
     fn declaration() {
@@ -129,5 +137,64 @@ mod to_string {
         let s = Selector::Id("my_id".to_string());
 
         assert_eq!(s.to_string(), "#my_id");
+    }
+
+    #[test]
+    fn combinator_descendant() {
+        let s = Selector::Combinator(
+            Box::new(Selector::Tag("body".to_string())),
+            Combinator::Descendant,
+            Box::new(Selector::Tag("h1".to_string()))
+        );
+
+        assert_eq!(s.to_string(), "body h1");
+    }
+
+    #[test]
+    fn combinator_child() {
+        let s = Selector::Combinator(
+            Box::new(Selector::Tag("body".to_string())),
+            Combinator::Child,
+            Box::new(Selector::Tag("h1".to_string()))
+        );
+
+        assert_eq!(s.to_string(), "body > h1");
+    }
+
+    #[test]
+    fn combinator_adjacent_sibling() {
+        let s = Selector::Combinator(
+            Box::new(Selector::Tag("body".to_string())),
+            Combinator::AdjacentSibling,
+            Box::new(Selector::Tag("h1".to_string()))
+        );
+
+        assert_eq!(s.to_string(), "body + h1");
+    }
+
+    #[test]
+    fn combinator_general_sibling() {
+        let s = Selector::Combinator(
+            Box::new(Selector::Tag("body".to_string())),
+            Combinator::GeneralSibling,
+            Box::new(Selector::Tag("h1".to_string()))
+        );
+
+        assert_eq!(s.to_string(), "body ~ h1");
+    }
+
+    #[test]
+    fn combinator_multiple() {
+        let s = Selector::Combinator(
+            Box::new(Selector::Combinator(
+                Box::new(Selector::Tag("body".to_string())),
+                Combinator::Child,
+                Box::new(Selector::Tag("section".to_string())),
+            )),
+            Combinator::GeneralSibling,
+            Box::new(Selector::Tag("h1".to_string()))
+        );
+
+        assert_eq!(s.to_string(), "body > section ~ h1");
     }
 }
