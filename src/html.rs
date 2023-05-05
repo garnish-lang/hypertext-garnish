@@ -1,9 +1,9 @@
-struct HTMLAttribute {
+struct Attribute {
     name: String,
     value: String,
 }
 
-struct HTMLElement {
+struct Element {
     tag: String,
     attributes: Vec<HTMLAttribute>,
     children: Vec<HTMLElement>,

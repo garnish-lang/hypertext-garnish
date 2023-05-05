@@ -1,14 +1,19 @@
-struct CSSDeclaration {
+struct Declaration {
     property: String,
     value: String,
 }
 
-struct CSSRule {
+struct Rule {
     selector: String,
     declarations: Vec<CSSDeclaration>,
 }
 
-struct CSSSheet {
+struct RuleSet {
+    media_query: Option<String>,
     rules: Vec<CSSRule>,
+}
+
+struct Sheet {
+    sets: Vec<CSSSet>
 }
 
