@@ -8,7 +8,7 @@ impl ToString for DeclarationValue {
         match self {
             DeclarationValue::Basic(s) => match s.contains(" ") {
                 true => format!("\"{}\"", s),
-                false => s.to_string()
+                false => s.to_string(),
             },
             DeclarationValue::Function(name, args) => format!("{}({})", name, args.join(", ")),
         }
@@ -53,6 +53,17 @@ enum Selector {
     Group(Vec<Selector>), // comma separated list (e.g. body, h1, p)
 }
 
+impl ToString for Selector {
+    fn to_string(&self) -> String {
+        match self {
+            Selector::Tag(s) => s.to_string(),
+            Selector::Id(id) => format!("#{}", id),
+            Selector::Class(class) => format!(".{}", class),
+            _ => unimplemented!(),
+        }
+    }
+}
+
 struct Rule {
     selector: Selector,
     declarations: Vec<Declaration>,
@@ -67,7 +78,7 @@ struct RuleSet {
 
 #[cfg(test)]
 mod to_string {
-    use crate::css::{Declaration, DeclarationValue};
+    use crate::css::{Declaration, DeclarationValue, Selector};
 
     #[test]
     fn declaration() {
@@ -97,5 +108,26 @@ mod to_string {
             ),
         );
         assert_eq!(d.to_string(), "color: rgb(200, 200, 200);")
+    }
+
+    #[test]
+    fn tag_selector() {
+        let s = Selector::Tag("body".to_string());
+
+        assert_eq!(s.to_string(), "body");
+    }
+
+    #[test]
+    fn class_selector() {
+        let s = Selector::Class("my-class".to_string());
+
+        assert_eq!(s.to_string(), ".my-class");
+    }
+
+    #[test]
+    fn id_selector() {
+        let s = Selector::Id("my_id".to_string());
+
+        assert_eq!(s.to_string(), "#my_id");
     }
 }
