@@ -69,6 +69,9 @@ impl ToString for Selector {
             }
             Selector::PseudoClass(base, class) => format!("{}:{}", base.to_string(), class),
             Selector::PseudoElement(base, class) => format!("{}::{}", base.to_string(), class),
+            Selector::Attribute(attr) => format!("[{}]", attr),
+            Selector::AttributeValue(attr, value) => format!("[{}=\"{}\"]", attr, value),
+            Selector::AttributeContains(attr, value) => format!("[{}~=\"{}\"]", attr, value),
             _ => unimplemented!(),
         }
     }
@@ -218,5 +221,34 @@ mod to_string {
         );
 
         assert_eq!(s.to_string(), "body::first-line");
+    }
+
+    #[test]
+    fn attribute() {
+        let s = Selector::Attribute(
+            "title".to_string()
+        );
+
+        assert_eq!(s.to_string(), "[title]");
+    }
+
+    #[test]
+    fn attribute_value() {
+        let s = Selector::AttributeValue(
+            "title".to_string(),
+            "hello".to_string()
+        );
+
+        assert_eq!(s.to_string(), "[title=\"hello\"]");
+    }
+
+    #[test]
+    fn attribute_contains() {
+        let s = Selector::AttributeContains(
+            "title".to_string(),
+            "hello".to_string()
+        );
+
+        assert_eq!(s.to_string(), "[title~=\"hello\"]");
     }
 }
