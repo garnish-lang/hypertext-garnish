@@ -1,17 +1,26 @@
 struct Attribute {
     name: String,
-    value: String,
+    value: Option<String>,
 }
 
 impl Attribute {
     pub fn new(name: String, value: String) -> Self {
-        Self { name, value }
+        Self { name, value: Some(value) }
+    }
+
+    pub fn toggle(name: String) -> Self {
+        Self { name, value: None }
     }
 }
 
 impl ToString for Attribute {
     fn to_string(&self) -> String {
-        format!("{}=\"{}\"", self.name, self.value)
+        match &self.value {
+            Some(value) => {
+                format!("{}=\"{}\"", self.name, value)
+            }
+            None => self.name.to_string()
+        }
     }
 }
 
@@ -90,6 +99,18 @@ mod to_string {
         );
 
         assert_eq!(element.to_string(), "<body>Some text</body>");
+    }
+
+    #[test]
+    fn attribute() {
+        let attr = Attribute::new("class".to_string(), "my-class".to_string());
+        assert_eq!(attr.to_string(), "class=\"my-class\"")
+    }
+
+    #[test]
+    fn attribute_no_value() {
+        let attr = Attribute::toggle("class".to_string());
+        assert_eq!(attr.to_string(), "class")
     }
 
     #[test]
