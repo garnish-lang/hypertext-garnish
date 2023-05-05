@@ -40,6 +40,7 @@ enum Combinator {
 }
 
 enum Selector {
+    Universal,
     Tag(String),                                          // tag name
     Class(String),                                        // class name
     Id(String),                                           // id name
@@ -56,6 +57,7 @@ enum Selector {
 impl ToString for Selector {
     fn to_string(&self) -> String {
         match self {
+            Selector::Universal => "*".to_string(),
             Selector::Tag(s) => s.to_string(),
             Selector::Id(id) => format!("#{}", id),
             Selector::Class(class) => format!(".{}", class),
@@ -307,6 +309,13 @@ mod to_string {
             ),
         );
         assert_eq!(d.to_string(), "color:rgb(200, 200, 200);")
+    }
+
+    #[test]
+    fn universal_selector() {
+        let s = Selector::Universal;
+
+        assert_eq!(s.to_string(), "*");
     }
 
     #[test]
