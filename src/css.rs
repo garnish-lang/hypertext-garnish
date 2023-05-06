@@ -1,3 +1,6 @@
+use serde::Deserialize;
+
+#[derive(Debug, Clone, Eq, PartialEq, Deserialize)]
 pub enum DeclarationValue {
     Basic(String),
     Function(String, Vec<String>), // (function name, function arguments
@@ -15,6 +18,7 @@ impl ToString for DeclarationValue {
     }
 }
 
+#[derive(Debug, Clone, Eq, PartialEq, Deserialize)]
 pub struct Declaration {
     property: String,
     value: DeclarationValue,
@@ -32,6 +36,7 @@ impl ToString for Declaration {
     }
 }
 
+#[derive(Debug, Clone, Eq, PartialEq, Deserialize)]
 pub enum Combinator {
     Descendant,
     Child,
@@ -39,6 +44,7 @@ pub enum Combinator {
     GeneralSibling,
 }
 
+#[derive(Debug, Clone, Eq, PartialEq, Deserialize)]
 pub enum Selector {
     Universal,
     Tag(String),                                          // tag name
@@ -93,6 +99,7 @@ impl ToString for Selector {
     }
 }
 
+#[derive(Debug, Clone, Eq, PartialEq, Deserialize)]
 pub struct Rule {
     selector: Selector,
     declarations: Vec<Declaration>,
@@ -153,12 +160,14 @@ impl ToString for Rule {
     }
 }
 
+#[derive(Debug, Clone, Eq, PartialEq, Deserialize)]
 pub enum MediaConstraint {
     None,
     Not,
     Only,
 }
 
+#[derive(Debug, Clone, Eq, PartialEq, Deserialize)]
 pub struct MediaFeature {
     property: String,
     value: String,
@@ -176,6 +185,7 @@ impl ToString for MediaFeature {
     }
 }
 
+#[derive(Debug, Clone, Eq, PartialEq, Deserialize)]
 pub enum MediaCondition {
     Lone(MediaFeature),
     And(MediaFeature, MediaFeature),
@@ -194,6 +204,7 @@ impl ToString for MediaCondition {
     }
 }
 
+#[derive(Debug, Clone, Eq, PartialEq, Deserialize)]
 pub struct MediaQuery {
     constraint: MediaConstraint,
     media_type: String,
@@ -214,6 +225,7 @@ impl MediaQuery {
     }
 }
 
+#[derive(Debug, Clone, Eq, PartialEq, Deserialize)]
 pub struct RuleSet {
     media_query: Option<MediaQuery>,
     rules: Vec<Rule>,
