@@ -103,6 +103,7 @@ impl ToString for Selector {
 pub struct Rule {
     selector: Selector,
     declarations: Vec<Declaration>,
+    #[serde(default)]
     sub_rules: Vec<Rule>,
 }
 
@@ -167,6 +168,12 @@ pub enum MediaConstraint {
     Only,
 }
 
+impl Default for MediaConstraint {
+    fn default() -> Self {
+        Self::None
+    }
+}
+
 #[derive(Debug, Clone, Eq, PartialEq, Deserialize)]
 pub struct MediaFeature {
     property: String,
@@ -206,20 +213,22 @@ impl ToString for MediaCondition {
 
 #[derive(Debug, Clone, Eq, PartialEq, Deserialize)]
 pub struct MediaQuery {
-    constraint: MediaConstraint,
     media_type: String,
+    #[serde(default)]
+    constraint: MediaConstraint,
+    #[serde(default)]
     features: Vec<MediaCondition>,
 }
 
 impl MediaQuery {
     pub fn new(
-        condition: MediaConstraint,
+        constraint: MediaConstraint,
         media_type: String,
         features: Vec<MediaCondition>,
     ) -> Self {
         Self {
-            constraint: condition,
             media_type,
+            constraint,
             features,
         }
     }
@@ -229,6 +238,7 @@ impl MediaQuery {
 pub struct RuleSet {
     media_query: Option<MediaQuery>,
     rules: Vec<Rule>,
+    #[serde(default)]
     sub_sets: Vec<RuleSet>,
 }
 

@@ -83,28 +83,9 @@ mod test {
                 ;property = \"color\",
                 ;value = (;DeclarationValue::Basic \"blue\")
             ),
-            (
-                ;property = \"background-color\",
-                ;value = (;DeclarationValue::Basic \"red\")
-            )
         )
     ),
-    (
-        ;selector = (;Selector::Tag \"body\"),
-        ;declarations = (
-            (
-                ;property = \"color\",
-                ;value = (;DeclarationValue::Basic \"blue\")
-            ),
-            (
-                ;property = \"background-color\",
-                ;value = (;DeclarationValue::Basic \"red\")
-            )
-        )
-    ),
-),
-;sub_sets = (,)
-        ";
+),";
         let output = make_css_from_garnish(input).unwrap();
 
         assert_eq!(
