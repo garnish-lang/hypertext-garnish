@@ -33,7 +33,9 @@ pub enum Node {
     Comment(String),
     Element {
         tag: String,
+        #[serde(default)]
         attributes: Vec<Attribute>,
+        #[serde(default)]
         children: Vec<Node>,
     },
 }
