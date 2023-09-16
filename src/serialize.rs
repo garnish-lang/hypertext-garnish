@@ -11,7 +11,7 @@ use crate::html::*;
 
 pub fn make_html_from_garnish(input: &str) -> Result<Node, String> {
     let tokens = lex(input)?;
-    let parsed = parse(tokens)?;
+    let parsed = parse(&tokens)?;
     let mut data = SimpleRuntimeData::new();
     build_with_data(parsed.get_root(), parsed.get_nodes().clone(), &mut data)?;
     let mut runtime = SimpleGarnishRuntime::new(data);
@@ -34,7 +34,7 @@ pub fn make_html_from_garnish(input: &str) -> Result<Node, String> {
 
 pub fn make_css_from_garnish(input: &str) -> Result<RuleSet, String> {
     let tokens = lex(input)?;
-    let parsed = parse(tokens)?;
+    let parsed = parse(&tokens)?;
     let mut data = SimpleRuntimeData::new();
     build_with_data(parsed.get_root(), parsed.get_nodes().clone(), &mut data)?;
     let mut runtime = SimpleGarnishRuntime::new(data);
