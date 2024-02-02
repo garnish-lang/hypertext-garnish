@@ -1,5 +1,5 @@
 [package]
-name = "hypertext-garnish"
+name = "hypertext_garnish"
 version = "0.1.0"
 edition = "2021"
 
@@ -7,7 +7,7 @@ edition = "2021"
 
 [dependencies]
 serde = { version = "1.0.147", features = ["derive"] }
-serde-garnish = { path = "../serde-garnish"}
+serde_garnish = { path = "../serde-garnish" }
 garnish_lang_runtime = { path = "../garnish-core/runtime"}
 garnish_lang_compiler = { path = "../garnish-core/compiler"}
 garnish_data = { path = "../garnish-core/data"}
