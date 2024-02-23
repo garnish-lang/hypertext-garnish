@@ -1,9 +1,9 @@
 use serde::Deserialize;
 
-use garnish_data::SimpleRuntimeData;
+use garnish_lang_simple_data::SimpleRuntimeData;
 use garnish_lang_compiler::{build_with_data, lex, parse};
 use garnish_lang_runtime::runtime_impls::SimpleGarnishRuntime;
-use garnish_traits::{EmptyContext, GarnishLangRuntimeState, GarnishRuntime};
+use garnish_lang_traits::{EmptyContext, GarnishLangRuntimeState, GarnishRuntime};
 use serde_garnish::GarnishDataDeserializer;
 
 use crate::css::RuleSet;
