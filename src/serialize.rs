@@ -3,7 +3,7 @@ use serde::Deserialize;
 use garnish_lang_simple_data::SimpleRuntimeData;
 use garnish_lang_compiler::{build_with_data, lex, parse};
 use garnish_lang_runtime::runtime_impls::SimpleGarnishRuntime;
-use garnish_lang_traits::{EmptyContext, GarnishLangRuntimeState, GarnishRuntime};
+use garnish_lang_traits::{EmptyContext, GarnishLangRuntimeData, GarnishLangRuntimeState, GarnishRuntime};
 use serde_garnish::GarnishDataDeserializer;
 
 use crate::css::RuleSet;
@@ -15,6 +15,8 @@ pub fn make_html_from_garnish(input: &str) -> Result<Node, String> {
     let mut data = SimpleRuntimeData::new();
     build_with_data(parsed.get_root(), parsed.get_nodes().clone(), &mut data)?;
     let mut runtime = SimpleGarnishRuntime::new(data);
+    runtime.get_data_mut().push_value_stack(0)?;
+
     loop {
         match runtime.execute_current_instruction::<EmptyContext>(None) {
             Err(e) => Err(e)?,
@@ -38,6 +40,8 @@ pub fn make_css_from_garnish(input: &str) -> Result<RuleSet, String> {
     let mut data = SimpleRuntimeData::new();
     build_with_data(parsed.get_root(), parsed.get_nodes().clone(), &mut data)?;
     let mut runtime = SimpleGarnishRuntime::new(data);
+    runtime.get_data_mut().push_value_stack(0)?;
+
     loop {
         match runtime.execute_current_instruction::<EmptyContext>(None) {
             Err(e) => Err(e)?,
