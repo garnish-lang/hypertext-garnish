@@ -1,9 +1,9 @@
 use serde::Deserialize;
 
-use garnish_lang_simple_data::SimpleRuntimeData;
+use garnish_lang_simple_data::SimpleGarnishData;
 use garnish_lang_compiler::{build_with_data, lex, parse};
 use garnish_lang_runtime::runtime_impls::SimpleGarnishRuntime;
-use garnish_lang_traits::{EmptyContext, GarnishLangRuntimeData, GarnishLangRuntimeState, GarnishRuntime};
+use garnish_lang_traits::{EmptyContext, GarnishData, GarnishLangRuntimeState, GarnishRuntime};
 use serde_garnish::GarnishDataDeserializer;
 
 use crate::css::RuleSet;
@@ -12,7 +12,7 @@ use crate::html::*;
 pub fn make_html_from_garnish(input: &str) -> Result<Node, String> {
     let tokens = lex(input)?;
     let parsed = parse(&tokens)?;
-    let mut data = SimpleRuntimeData::new();
+    let mut data = SimpleGarnishData::new();
     build_with_data(parsed.get_root(), parsed.get_nodes().clone(), &mut data)?;
     let mut runtime = SimpleGarnishRuntime::new(data);
     runtime.get_data_mut().push_value_stack(0)?;
@@ -37,7 +37,7 @@ pub fn make_html_from_garnish(input: &str) -> Result<Node, String> {
 pub fn make_css_from_garnish(input: &str) -> Result<RuleSet, String> {
     let tokens = lex(input)?;
     let parsed = parse(&tokens)?;
-    let mut data = SimpleRuntimeData::new();
+    let mut data = SimpleGarnishData::new();
     build_with_data(parsed.get_root(), parsed.get_nodes().clone(), &mut data)?;
     let mut runtime = SimpleGarnishRuntime::new(data);
     runtime.get_data_mut().push_value_stack(0)?;
