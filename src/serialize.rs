@@ -1,9 +1,10 @@
 use serde::Deserialize;
 
-use garnish_lang_simple_data::SimpleGarnishData;
-use garnish_lang_compiler::{build_with_data, lex, parse};
-use garnish_lang_runtime::runtime_impls::SimpleGarnishRuntime;
-use garnish_lang_traits::{EmptyContext, GarnishData, GarnishLangRuntimeState, GarnishRuntime};
+use garnish_lang::compiler::lex::lex;
+use garnish_lang::compiler::parse::parse;
+use garnish_lang::compiler::build::build_with_data;
+use garnish_lang::simple::{SimpleGarnishRuntime, SimpleGarnishData, SimpleRuntimeState};
+use garnish_lang::{EmptyContext, GarnishData, GarnishRuntime};
 use serde_garnish::GarnishDataDeserializer;
 
 use crate::css::RuleSet;
@@ -21,8 +22,8 @@ pub fn make_html_from_garnish(input: &str) -> Result<Node, String> {
         match runtime.execute_current_instruction::<EmptyContext>(None) {
             Err(e) => Err(e)?,
             Ok(data) => match data.get_state() {
-                GarnishLangRuntimeState::Running => (),
-                GarnishLangRuntimeState::End => break,
+                SimpleRuntimeState::Running => (),
+                SimpleRuntimeState::End => break,
             },
         }
     }
@@ -46,8 +47,8 @@ pub fn make_css_from_garnish(input: &str) -> Result<RuleSet, String> {
         match runtime.execute_current_instruction::<EmptyContext>(None) {
             Err(e) => Err(e)?,
             Ok(data) => match data.get_state() {
-                GarnishLangRuntimeState::Running => (),
-                GarnishLangRuntimeState::End => break,
+                SimpleRuntimeState::Running => (),
+                SimpleRuntimeState::End => break,
             },
         }
     }

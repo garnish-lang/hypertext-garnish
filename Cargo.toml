@@ -1,7 +1,7 @@
 [package]
 name = "hypertext_garnish"
 description = "Serialization/deserialization of garnish data to HTML/CSS."
-version = "0.1.0"
+version = "0.2.0"
 authors = ["Chad Collins <chad.collins@capitalone.com>"]
 edition = "2021"
 homepage = "https://github.com/garnish-lang/hypertext-garnish"
@@ -14,8 +14,5 @@ readme = "./README.md"
 
 [dependencies]
 serde = { version = "1.0.147", features = ["derive"] }
-serde_garnish = { version = "0.1.0", path = "../serde-garnish" }
-garnish_lang_runtime = { version = "0.0.2-alpha", path = "../garnish-core/runtime" }
-garnish_lang_compiler = { version = "0.0.2-alpha", path = "../garnish-core/compiler" }
-garnish_lang_simple_data = { version = "0.0.2-alpha", path = "../garnish-core/data" }
-garnish_lang_traits = { version = "0.0.2-alpha", path = "../garnish-core/traits" }
+serde_garnish = "0.2.0"
+garnish_lang = "0.0.4-alpha"
